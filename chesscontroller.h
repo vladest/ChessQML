@@ -16,7 +16,7 @@ public slots:
     void initialize(); //initializes pieces to start position
 
 private:
-    Piece *_pieces[4][8];
+    Piece *_piecesSet[4][8];
 };
 
 #endif // CHESSCONTROLLER_H
