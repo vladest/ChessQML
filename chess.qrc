@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="/img/rook_white.svg">qml/images/rook_white.svg</file>
+        <file alias="/img/rook_black.svg">qml/images/rook_black.svg</file>
+        <file alias="/img/queen_white.svg">qml/images/queen_white.svg</file>
+        <file alias="/img/queen_black.svg">qml/images/queen_black.svg</file>
+        <file alias="/img/pawn_white.svg">qml/images/pawn_white.svg</file>
+        <file alias="/img/pawn_black.svg">qml/images/pawn_black.svg</file>
+        <file alias="/img/knight_white.svg">qml/images/knight_white.svg</file>
+        <file alias="/img/knight_black.svg">qml/images/knight_black.svg</file>
+        <file alias="/img/king_white.svg">qml/images/king_white.svg</file>
+        <file alias="/img/king_black.svg">qml/images/king_black.svg</file>
+        <file alias="/img/bishop_white.svg">qml/images/bishop_white.svg</file>
+        <file alias="/img/bishop_black.svg">qml/images/bishop_black.svg</file>
+    </qresource>
+</RCC>

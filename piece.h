@@ -19,7 +19,7 @@ public:
     Q_PROPERTY(QString piecePosition READ piecePosition WRITE setPiecePosition NOTIFY piecePositionChanged)
     Q_PROPERTY(bool pieceAlive READ pieceAlive WRITE setPieceAlive NOTIFY pieceAliveChanged)
 
-    Piece(QQuickPaintedItem * parent = 0);
+    Piece(QQuickItem * parent = 0);
 
     PieceType pieceType() const;
     PieceColor pieceColor() const;
@@ -40,6 +40,8 @@ signals:
     void piecePositionChanged(QString position);
     void pieceAliveChanged(bool pieceAlive);
 
+private:
+    void loadImage();
 private:
     QImage _image; //piece image
     PieceType m_type;

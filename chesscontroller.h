@@ -11,9 +11,12 @@ public:
     explicit ChessController(QObject *parent = 0);
 
 signals:
-
+    void piecePosChanged(Piece *piece);
 public slots:
     void initialize(); //initializes pieces to start position
+    int position2Index(const QString pos);
+    QString index2position(int index);
+    void piecePositionChanged(const QString &pos);
 
 private:
     Piece *_piecesSet[4][8];

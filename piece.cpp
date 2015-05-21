@@ -1,10 +1,11 @@
 #include "piece.h"
 #include <QPainter>
 
-Piece::Piece(QQuickPaintedItem *parent): QQuickPaintedItem(parent)
-, m_type(NoType)
-, m_piececolor(NoColor)
-, m_pieceAlive(false) {
+Piece::Piece(QQuickItem *parent): QQuickPaintedItem(parent)
+  , m_type(NoType)
+  , m_piececolor(NoColor)
+  , m_pieceAlive(false) {
+    setFlag(QQuickItem::ItemHasContents, true);
 }
 
 Piece::PieceType Piece::pieceType() const {
@@ -20,7 +21,8 @@ QString Piece::piecePosition() const {
 }
 
 void Piece::paint(QPainter *painter) {
-    if (!_image.isDetached()) {
+    if (!_image.isNull()) {
+        //qDebug() << "updating" << boundingRect();
         painter->drawImage(boundingRect(), _image);
     }
 }
@@ -31,7 +33,7 @@ void Piece::setPieceType(Piece::PieceType type) {
 
     m_type = type;
     emit pieceTypeChanged(type);
-    update();
+    loadImage();
 }
 
 void Piece::setPieceColor(Piece::PieceColor piececolor) {
@@ -40,7 +42,7 @@ void Piece::setPieceColor(Piece::PieceColor piececolor) {
 
     m_piececolor = piececolor;
     emit pieceColorChanged(piececolor);
-    update();
+    loadImage();
 }
 
 void Piece::setPiecePosition(QString position) {
@@ -58,8 +60,33 @@ bool Piece::pieceAlive() const {
 void Piece::setPieceAlive(bool pieceAlive) {
     if (m_pieceAlive == pieceAlive)
         return;
-
     m_pieceAlive = pieceAlive;
     emit pieceAliveChanged(pieceAlive);
+    if (m_pieceAlive)
+        setVisible(true);
+    else
+        setVisible(false);
+}
+
+void Piece::loadImage() {
+    if (m_type != NoType && m_piececolor != NoColor && _image.isNull()) {
+        QString piecetype = "pawn";
+        QString piececolor = "white";
+        switch (m_type) {
+        case Rook: piecetype = "rook"; break;
+        case Knight: piecetype = "knight"; break;
+        case Bishop: piecetype = "bishop"; break;
+        case King: piecetype = "king"; break;
+        case Queen: piecetype = "queen"; break;
+        }
+        if (m_piececolor == Black)
+            piececolor = "black";
+        QString imgpath = QString(":/img/%1_%2.svg").arg(piecetype).arg(piececolor);
+        if (!_image.load(imgpath)) {
+            qWarning() << "Error loading image:" << imgpath;
+            return;
+        }
+        update();
+    }
 }
 

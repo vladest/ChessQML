@@ -16,3 +16,6 @@ DISTFILES += \
 HEADERS += \
     piece.h \
     chesscontroller.h
+
+RESOURCES += \
+    chess.qrc
