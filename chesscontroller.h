@@ -4,6 +4,8 @@
 #include <QObject>
 #include "piece.h"
 
+const int chessSide = 8;
+
 class ChessController : public QObject
 {
     Q_OBJECT
@@ -16,10 +18,13 @@ public slots:
     void initialize(); //initializes pieces to start position
     int position2Index(const QString pos);
     QString index2position(int index);
-    void piecePositionChanged(const QString &pos);
-
+    void pieceIndexChanged(int pos);
+    bool isValidMove(int fromindex, int toindex);
+    Piece *getPieceByIndex(int index) const;
 private:
-    Piece *_piecesSet[4][8];
+    void cleanup();
+private:
+    Piece *_piecesSet[chessSide][chessSide];
 };
 
 #endif // CHESSCONTROLLER_H

@@ -16,8 +16,8 @@ Piece::PieceColor Piece::pieceColor() const {
     return m_piececolor;
 }
 
-QString Piece::piecePosition() const {
-    return m_position;
+int Piece::pieceIndex() const {
+    return m_index;
 }
 
 void Piece::paint(QPainter *painter) {
@@ -45,12 +45,12 @@ void Piece::setPieceColor(Piece::PieceColor piececolor) {
     loadImage();
 }
 
-void Piece::setPiecePosition(QString position) {
-    if (m_position == position)
+void Piece::setPieceIndex(int pieceindex) {
+    if (m_index == pieceindex)
         return;
 
-    m_position = position;
-    emit piecePositionChanged(position);
+    m_index = pieceindex;
+    emit pieceIndexChanged(m_index);
 }
 
 bool Piece::pieceAlive() const {
