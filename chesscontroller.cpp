@@ -1,7 +1,8 @@
 #include "chesscontroller.h"
 #include <QQmlEngine>
 
-ChessController::ChessController(QObject *parent) : QObject(parent) {
+ChessController::ChessController(QObject *parent) : QObject(parent)
+  , m_currentMoveTurn(Piece::NoColor) {
     qmlRegisterType<Piece>("Chess", 1, 0, "Piece");
     qRegisterMetaType<Piece*>();
     //clean board array
@@ -30,8 +31,8 @@ void ChessController::initialize() {
         for(int column = 0; column < chessSide; column++) {
             if (row == 0 || row == 1 || row == 6 || row == 7) {
                 _piecesSet[row][column] = new Piece;
-                connect(_piecesSet[row][column], &Piece::pieceIndexChanged, this, &ChessController::pieceIndexChanged);
                 QQmlEngine::setObjectOwnership(_piecesSet[row][column], QQmlEngine::CppOwnership);
+                connect(_piecesSet[row][column], &Piece::pieceIndexChanged, this, &ChessController::pieceIndexChanged, Qt::QueuedConnection);
                 if (row == 0 || row == 1) //black. top of the board
                     _piecesSet[row][column]->setPieceColor(Piece::Black);
                 else if (row == 6 || row == 7)
@@ -62,6 +63,7 @@ void ChessController::initialize() {
     _piecesSet[7][5]->setPieceType(Piece::Bishop);
     _piecesSet[7][6]->setPieceType(Piece::Knight);
     _piecesSet[7][7]->setPieceType(Piece::Rook);
+    setCurrentMoveTurn(Piece::White);
 }
 
 int ChessController::position2Index(const QString pos) {
@@ -108,7 +110,7 @@ bool ChessController::isValidMove(int fromindex, int toindex) {
      * x - column, y - row
      */
     switch(source->pieceType()) {
-     /*
+    /*
     if(dx==ox && abs(dy-oy)==1 && target==0) return 1;
         if(abs(dx-ox)==1 && abs(dy-oy)==1 && target!= 0) return 1;
         if(current_player == 1 && oy==1 && abs(oy-dy)==2 && target == 0) return 1;
@@ -131,4 +133,36 @@ Piece *ChessController::getPieceByIndex(int index) const {
     return _piecesSet[index / chessSide][index % chessSide];
 }
 
+Piece::PieceColor ChessController::currentMoveTurn() const {
+    return m_currentMoveTurn;
+}
 
+void ChessController::setCurrentMoveTurn(Piece::PieceColor currentMoveTurn) {
+    if (m_currentMoveTurn == currentMoveTurn)
+        return;
+
+    m_currentMoveTurn = currentMoveTurn;
+    emit currentMoveTurnChanged(currentMoveTurn);
+}
+
+void ChessController::makeMove(int fromindex, int toindex) {
+    if (fromindex == -1 || toindex == -1 || fromindex == toindex)
+        return;
+
+    int fromrow = fromindex / 8;
+    int fromcol = fromindex % 8;
+
+    int torow = toindex / 8;
+    int tocol = toindex % 8;
+    if (!_piecesSet[fromrow][fromcol])
+        return;
+
+    _piecesSet[torow][tocol] = _piecesSet[fromrow][fromcol];
+    _piecesSet[fromrow][fromcol] = Q_NULLPTR;
+    _piecesSet[torow][tocol]->setPieceIndex(toindex);
+    emit pieceRemoved(fromindex);
+    if (currentMoveTurn() == Piece::White)
+        setCurrentMoveTurn(Piece::Black);
+    else
+        setCurrentMoveTurn(Piece::White);
+}

@@ -9,7 +9,7 @@ Item {
 
     property int moveFromIndex: -1 //no selection == -1, otherwise - index
     property int moveToIndex: -1
-    property int moveTurn: Piece.White
+    property int moveTurn: chessController.currentMoveTurn
 
     function restart() {
         clearField()
@@ -22,11 +22,24 @@ Item {
         }
     }
 
+    onMoveToIndexChanged: {
+        if (moveFromIndex != -1 && moveToIndex != -1) {
+            chessController.makeMove(moveFromIndex, moveToIndex)
+            var oldindex = moveFromIndex
+            moveFromIndex = -1
+            repeater.itemAt(oldindex).setColor()
+            moveToIndex = -1
+        }
+    }
+
     Connections {
         target: chessController
         onPiecePosChanged: {
             //console.log(piece.piecePosition, chessController.position2Index(piece.piecePosition))
             repeater.itemAt(piece.pieceIndex).piece = piece
+        }
+        onPieceRemoved: {
+            repeater.itemAt(index).piece = null
         }
     }
 
@@ -46,8 +59,7 @@ Item {
                 height: root.cellSize;
                 property alias piece: chessCell.piece
                 function setColor() {
-                    chessCell.color = root.moveFromIndex == index ?
-                                "blue" : root.moveToIndex == index ? "green" :
+                    chessCell.color = root.moveFromIndex == index ? "blue" :
                                                                     ((Math.floor(index / 8) % 2) === 0)
                                                                     ? (index % 2  === 1 ? "#D18B47" : "#FFCE9E")
                                                                     : (index % 2  === 0 ? "#D18B47" : "#FFCE9E")
@@ -66,6 +78,8 @@ Item {
                             piece.anchors.fill = chessCell
                             piece.width = chessCell.width
                             piece.height = chessCell.height
+                        } else {
+
                         }
                     }
                 }
@@ -102,18 +116,23 @@ Item {
                                         oldindex = root.moveFromIndex
                                         root.moveFromIndex = -1
                                         repeater.itemAt(oldindex).setColor()
+                                        if (root.moveToIndex != -1) { //cleanup destination
+                                            oldindex = root.moveToIndex
+                                            repeater.itemAt(oldindex).setColor()
+                                            root.moveToIndex = -1
+                                        }
                                         root.moveFromIndex = index
                                     }
                                 }
                             } else {
                                 if (root.moveFromIndex != -1) {// piece selected
-                                    if (root.moveToIndex == -1) //check if destination already selected
-                                        root.moveToIndex = index
-                                    else { //choose another destination
-                                        oldindex = root.moveToIndex
+                                    if (root.moveToIndex == -1) {//check if destination already selected
+                                        if (chessController.isValidMove(root.moveFromIndex, index))
+                                            root.moveToIndex = index
+                                    } else { //choose another destination
                                         root.moveToIndex = -1
-                                        repeater.itemAt(oldindex).setColor()
-                                        root.moveToIndex = index
+                                        if (chessController.isValidMove(root.moveFromIndex, index))
+                                            root.moveToIndex = index
                                     }
                                 }
                             }

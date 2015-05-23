@@ -4,6 +4,7 @@
 Piece::Piece(QQuickItem *parent): QQuickPaintedItem(parent)
   , m_type(NoType)
   , m_piececolor(NoColor)
+  , m_index(-1)
   , m_pieceAlive(false) {
     setFlag(QQuickItem::ItemHasContents, true);
 }
