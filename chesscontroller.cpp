@@ -5,7 +5,7 @@ ChessController::ChessController(QObject *parent) : QObject(parent)
   , m_currentMoveTurn(Piece::NoColor) {
     qmlRegisterType<Piece>("Chess", 1, 0, "Piece");
     qRegisterMetaType<Piece*>();
-    //clean board array
+    //clean _pieceSet array
     for(int row = 0; row < chessSide; row++) {
         for(int column = 0; column < chessSide; column++) {
             _piecesSet[row][column] = Q_NULLPTR;
@@ -13,7 +13,7 @@ ChessController::ChessController(QObject *parent) : QObject(parent)
     }
 }
 
-// delete already allocated items
+// delete alreatorow allocated items
 void ChessController::cleanup() {
     for(int row = 0; row < chessSide; row++) {
         for(int column = 0; column < chessSide; column++) {
@@ -33,7 +33,7 @@ void ChessController::initialize() {
                 _piecesSet[row][column] = new Piece;
                 QQmlEngine::setObjectOwnership(_piecesSet[row][column], QQmlEngine::CppOwnership);
                 connect(_piecesSet[row][column], &Piece::pieceIndexChanged, this, &ChessController::pieceIndexChanged, Qt::QueuedConnection);
-                if (row == 0 || row == 1) //black. top of the board
+                if (row == 0 || row == 1) //black. top of the _pieceSet
                     _piecesSet[row][column]->setPieceColor(Piece::Black);
                 else if (row == 6 || row == 7)
                     _piecesSet[row][column]->setPieceColor(Piece::White);
@@ -98,30 +98,113 @@ bool ChessController::isValidMove(int fromindex, int toindex) {
     int torow = toindex / 8;
     int tocol = toindex % 8;
 
-    //int direction = piece->pieceColor() == Piece::White? -1 : 1;
-
     Piece *source = getPieceByIndex(fromindex);
     if (source == Q_NULLPTR)
         return false;
     Piece *target = getPieceByIndex(toindex);
-    qDebug() << source->pieceType() << fromrow << fromcol << torow << tocol << target;
+    //qDebug() << source->pieceType() << fromrow << fromcol << torow << tocol << target;
     /*
      * o - source, d - target
      * x - column, y - row
      */
-    switch(source->pieceType()) {
-    /*
-    if(dx==ox && abs(dy-oy)==1 && target==0) return 1;
-        if(abs(dx-ox)==1 && abs(dy-oy)==1 && target!= 0) return 1;
-        if(current_player == 1 && oy==1 && abs(oy-dy)==2 && target == 0) return 1;
-        if(current_player == 2 && oy==6 && abs(oy-dy)==2 && target == 0) return 1;
-        */
+    if (target != Q_NULLPTR && source->pieceColor() == target->pieceColor())
+        return false;
 
+    int x_dir = fromcol > tocol ? -1 : 1; //define derection increments
+    int y_dir = fromrow > torow ? -1 : 1;
+
+    switch(source->pieceType()) {
     case Piece::Pawn:
-        if(tocol == fromcol && qAbs(torow - fromrow)==1 && target == Q_NULLPTR) return true;
-        if(qAbs(tocol - fromcol) == 1 && qAbs(torow-fromrow)==1 && target != Q_NULLPTR && source->pieceColor() != target->pieceColor()) return true;
-        if(source->pieceColor() == Piece::Black && fromrow == 1 && tocol == fromcol && qAbs(fromrow-torow)==2 && target == Q_NULLPTR) return true;
-        if(source->pieceColor() == Piece::White && fromrow == 6 && tocol == fromcol && qAbs(fromrow-torow)==2 && target == Q_NULLPTR) return true;
+        if(tocol == fromcol && qAbs(torow - fromrow)==1 && target == Q_NULLPTR)
+            return true;
+        if(qAbs(tocol - fromcol) == 1 && qAbs(torow-fromrow)==1)
+            return true;
+        if(source->pieceColor() == Piece::Black && fromrow == 1 && tocol == fromcol && qAbs(fromrow-torow)==2 && target == Q_NULLPTR)
+            return true;
+        if(source->pieceColor() == Piece::White && fromrow == 6 && tocol == fromcol && qAbs(fromrow-torow)==2 && target == Q_NULLPTR)
+            return true;
+        break;
+    case Piece::Rook:
+        if(torow == fromrow || tocol == fromcol) { // Moving straight
+            if(tocol==fromcol) { // Moving vertically
+                int row = fromrow + y_dir;
+                while (row != torow) {
+                    if(_piecesSet[row][tocol] != Q_NULLPTR) { //non vacant cell on the path
+                        return false;
+                    }
+                    row += y_dir;
+                }
+            }
+            if(torow == fromrow) { // Moving horizontally
+                int col = fromcol + x_dir;
+                while (col != tocol) {
+                    if(_piecesSet[torow][col] != Q_NULLPTR) { //non vacant cell on the path
+                        return false;
+                    }
+                    col += x_dir;
+                }
+            }
+            return true;
+        }
+        break;
+    case Piece::Knight:
+        if((qAbs(torow - fromrow) == 2 && qAbs(tocol - fromcol) == 1)
+                || (qAbs(tocol - fromcol)==2 && qAbs(torow - fromrow) == 1)) {
+            return true;
+        }
+        break;
+    case Piece::Bishop:
+        if(qAbs(torow - fromrow) == qAbs(tocol - fromcol)) { // check diagonal
+            int row = fromrow + y_dir;
+            int col = fromcol + x_dir;
+            while (col != tocol && row != torow) {
+                if(_piecesSet[row][col] != Q_NULLPTR) { //non vacant cell on the path
+                    return false;
+                }
+                row += y_dir;
+                col += x_dir;
+            }
+            return true;
+        }
+        break;
+    case Piece::Queen:
+        if(qAbs(torow - fromrow) == qAbs(tocol - fromcol)) { // Moving diagonally
+            int row = fromrow + y_dir;
+            int col = fromcol + x_dir;
+            while (col != tocol && row != torow) {
+                if(_piecesSet[row][col] != Q_NULLPTR) { //non vacant cell on the path
+                    return false;
+                }
+                row += y_dir;
+                col += x_dir;
+            }
+            return true;
+        }
+        if(torow == fromrow || tocol == fromcol) { // Moving straight
+            if(tocol==fromcol) { // Moving vertically
+                int row = fromrow + y_dir;
+                while (row != torow) {
+                    if(_piecesSet[row][tocol] != Q_NULLPTR) { //non vacant cell on the path
+                        return false;
+                    }
+                    row += y_dir;
+                }
+            }
+            if(torow == fromrow) { // Moving horizontally
+                int col = fromcol + x_dir;
+                while (col != tocol) {
+                    if(_piecesSet[torow][col] != Q_NULLPTR) { //non vacant cell on the path
+                        return false;
+                    }
+                    col += x_dir;
+                }
+            }
+            return true;
+        }
+        break;
+    case Piece::King:
+        if(qAbs(torow - fromrow) <= 1 && qAbs(tocol - fromcol) <= 1)
+            return true;
         break;
     default:
         break;
