@@ -3,10 +3,6 @@ import Chess 1.0
 Item {
     id: root
     property int cellSize: width / 8
-    width: parent.width > parent.height ? parent.height : parent.width
-    height: parent.width > parent.height ? parent.height : parent.width
-    anchors.centerIn: parent
-
     property int moveFromIndex: -1 //no selection == -1, otherwise - index
     property int moveToIndex: -1
     property int moveTurn: chessController.currentMoveTurn
@@ -35,7 +31,6 @@ Item {
     Connections {
         target: chessController
         onPiecePosChanged: {
-            //console.log(piece.piecePosition, chessController.position2Index(piece.piecePosition))
             repeater.itemAt(piece.pieceIndex).piece = piece
         }
         onPieceRemoved: {
@@ -106,45 +101,42 @@ Item {
                         }
 
                         onClicked: {
-                            console.log("clicked pos:", chessController.index2position(index), chessCell.piece)
-                            var oldindex = -1
-                            if (chessCell.piece !== null) {
-                                if (chessCell.piece.pieceColor === root.moveTurn) {
-                                    if (root.moveFromIndex == -1)
-                                        root.moveFromIndex = index
-                                    else {
-                                        oldindex = root.moveFromIndex
-                                        root.moveFromIndex = -1
-                                        repeater.itemAt(oldindex).setColor()
-                                        if (root.moveToIndex != -1) { //cleanup destination
-                                            oldindex = root.moveToIndex
+                            if (chessController.gameRunning) {
+                                var oldindex = -1
+                                if (chessCell.piece !== null) {
+                                    if (chessCell.piece.pieceColor === root.moveTurn) {
+                                        if (root.moveFromIndex == -1)
+                                            root.moveFromIndex = index
+                                        else {
+                                            oldindex = root.moveFromIndex
+                                            root.moveFromIndex = -1
                                             repeater.itemAt(oldindex).setColor()
-                                            root.moveToIndex = -1
+                                            if (root.moveToIndex != -1) { //cleanup destination
+                                                oldindex = root.moveToIndex
+                                                repeater.itemAt(oldindex).setColor()
+                                                root.moveToIndex = -1
+                                            }
+                                            root.moveFromIndex = index
                                         }
-                                        root.moveFromIndex = index
+                                    }
+                                } else {
+                                    if (root.moveFromIndex != -1) {// piece selected
+                                        if (root.moveToIndex == -1) {//check if destination already selected
+                                            if (chessController.isValidMove(root.moveFromIndex, index))
+                                                root.moveToIndex = index
+                                        } else { //choose another destination
+                                            root.moveToIndex = -1
+                                            if (chessController.isValidMove(root.moveFromIndex, index))
+                                                root.moveToIndex = index
+                                        }
                                     }
                                 }
-                            } else {
-                                if (root.moveFromIndex != -1) {// piece selected
-                                    if (root.moveToIndex == -1) {//check if destination already selected
-                                        if (chessController.isValidMove(root.moveFromIndex, index))
-                                            root.moveToIndex = index
-                                    } else { //choose another destination
-                                        root.moveToIndex = -1
-                                        if (chessController.isValidMove(root.moveFromIndex, index))
-                                            root.moveToIndex = index
-                                    }
-                                }
+                                item.setColor()
                             }
-                            item.setColor()
                         }
                     }
                 }
             }
-
         }
-    }
-    Component.onCompleted: {
-        restart()
     }
 }
