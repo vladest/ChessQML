@@ -98,7 +98,7 @@ bool ChessController::isValidMove(int fromindex, int toindex) {
     if (target != Q_NULLPTR && source->pieceColor() == target->pieceColor())
         return false;
 
-    int x_dir = fromcol > tocol ? -1 : 1; //define derection increments
+    int x_dir = fromcol > tocol ? -1 : 1; //define direction increments
     int y_dir = fromrow > torow ? -1 : 1;
 
     switch(source->pieceType()) {
@@ -113,8 +113,8 @@ bool ChessController::isValidMove(int fromindex, int toindex) {
             return true;
         break;
     case Piece::Rook:
-        if(torow == fromrow || tocol == fromcol) { // Moving straight
-            if(tocol==fromcol) { // Moving vertically
+        if(torow == fromrow || tocol == fromcol) { // moving straight
+            if(tocol==fromcol) { // moving vertically
                 int row = fromrow + y_dir;
                 while (row != torow) {
                     if(m_piecesSet[row][tocol] != Q_NULLPTR) { //non vacant cell on the path
@@ -123,7 +123,7 @@ bool ChessController::isValidMove(int fromindex, int toindex) {
                     row += y_dir;
                 }
             }
-            if(torow == fromrow) { // Moving horizontally
+            if(torow == fromrow) { // moving horizontally
                 int col = fromcol + x_dir;
                 while (col != tocol) {
                     if(m_piecesSet[torow][col] != Q_NULLPTR) { //non vacant cell on the path
@@ -156,7 +156,7 @@ bool ChessController::isValidMove(int fromindex, int toindex) {
         }
         break;
     case Piece::Queen:
-        if(qAbs(torow - fromrow) == qAbs(tocol - fromcol)) { // Moving diagonally
+        if(qAbs(torow - fromrow) == qAbs(tocol - fromcol)) { // moving diagonally
             int row = fromrow + y_dir;
             int col = fromcol + x_dir;
             while (col != tocol && row != torow) {
@@ -168,8 +168,8 @@ bool ChessController::isValidMove(int fromindex, int toindex) {
             }
             return true;
         }
-        if(torow == fromrow || tocol == fromcol) { // Moving straight
-            if(tocol==fromcol) { // Moving vertically
+        if(torow == fromrow || tocol == fromcol) { // moving straight
+            if(tocol==fromcol) { // moving vertically
                 int row = fromrow + y_dir;
                 while (row != torow) {
                     if(m_piecesSet[row][tocol] != Q_NULLPTR) { //non vacant cell on the path
@@ -276,7 +276,6 @@ void ChessController::loadGame(const QUrl &chessFile) {
         GameMove gm;
         stream.readRawData((char *)&gm, sizeof(GameMove));
         m_gameMoves.append(gm);
-        qDebug() << "added" << gm.fromIndex << gm.toIndex;
     }
 
     file.close();
@@ -329,7 +328,6 @@ void ChessController::setgameMode(ChessController::GameMode gameMode) {
 }
 
 void ChessController::nextMove() {
-    qDebug() << m_playBackIndex << m_gameMoves.size();
     if (m_playBackIndex < 0 || m_playBackIndex >= m_gameMoves.size())
         return;
     GameMove gm = m_gameMoves.at(m_playBackIndex);
