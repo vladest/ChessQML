@@ -98,15 +98,28 @@ bool ChessController::isValidMove(int fromindex, int toindex) {
 
     //int direction = piece->pieceColor() == Piece::White? -1 : 1;
 
-    Piece *source = getPieceByIndex(toindex);
+    Piece *source = getPieceByIndex(fromindex);
+    if (source == Q_NULLPTR)
+        return false;
     Piece *target = getPieceByIndex(toindex);
-
+    qDebug() << source->pieceType() << fromrow << fromcol << torow << tocol << target;
+    /*
+     * o - source, d - target
+     * x - column, y - row
+     */
     switch(source->pieceType()) {
+     /*
+    if(dx==ox && abs(dy-oy)==1 && target==0) return 1;
+        if(abs(dx-ox)==1 && abs(dy-oy)==1 && target!= 0) return 1;
+        if(current_player == 1 && oy==1 && abs(oy-dy)==2 && target == 0) return 1;
+        if(current_player == 2 && oy==6 && abs(oy-dy)==2 && target == 0) return 1;
+        */
+
     case Piece::Pawn:
         if(tocol == fromcol && qAbs(torow - fromrow)==1 && target == Q_NULLPTR) return true;
-        if(qAbs(tocol- fromcol) == 1 && qAbs(torow-fromrow)==1 && target != Q_NULLPTR) return true;
-        if(source->pieceColor() == Piece::Black && fromrow == 1 && qAbs(fromrow-torow)==2 && target == Q_NULLPTR) return true;
-        if(source->pieceColor() == Piece::White && fromrow == 6 && qAbs(fromrow-torow)==2 && target == Q_NULLPTR) return true;
+        if(qAbs(tocol - fromcol) == 1 && qAbs(torow-fromrow)==1 && target != Q_NULLPTR && source->pieceColor() != target->pieceColor()) return true;
+        if(source->pieceColor() == Piece::Black && fromrow == 1 && tocol == fromcol && qAbs(fromrow-torow)==2 && target == Q_NULLPTR) return true;
+        if(source->pieceColor() == Piece::White && fromrow == 6 && tocol == fromcol && qAbs(fromrow-torow)==2 && target == Q_NULLPTR) return true;
         break;
     default:
         break;

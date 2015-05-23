@@ -47,7 +47,7 @@ Item {
                 property alias piece: chessCell.piece
                 function setColor() {
                     chessCell.color = root.moveFromIndex == index ?
-                                "red" : root.moveToIndex == index ? "green" :
+                                "blue" : root.moveToIndex == index ? "green" :
                                                                     ((Math.floor(index / 8) % 2) === 0)
                                                                     ? (index % 2  === 1 ? "#D18B47" : "#FFCE9E")
                                                                     : (index % 2  === 0 ? "#D18B47" : "#FFCE9E")
@@ -76,6 +76,21 @@ Item {
                     MouseArea {
                         id: mouseSquareArea
                         anchors.fill: parent
+                        hoverEnabled: true
+                        onEntered: {
+                            if (root.moveFromIndex != -1) {
+                                if (chessController.isValidMove(root.moveFromIndex, index)) {
+                                    chessCell.color = "lightgreen"
+                                } else {
+                                    chessCell.color = "red"
+                                }
+                            }
+                        }
+
+                        onExited: {
+                            item.setColor()
+                        }
+
                         onClicked: {
                             console.log("clicked pos:", chessController.index2position(index), chessCell.piece)
                             var oldindex = -1
